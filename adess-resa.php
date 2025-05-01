@@ -1,0 +1,85 @@
+<?php
+
+/**
+ * Plugin Name: ADESS Resa
+ * Plugin URI:  https://plugin-adess.local
+ * Description: Gestion des événements découplée pour ADESS
+ * Version:     0.1.0
+ * Author:      Joshua
+ * Text Domain: adess-resa
+ */
+
+
+ // condition pour empêcher l’accès direct au fichier
+if (! defined('ABSPATH')) {
+    exit;
+}
+
+// Activation / désactivation
+
+// permet à WordPress d’​exécuter automatiquement des méthodes de la classe Installer quand le plugin est activé.
+
+// appelle la méthode activate() de la classe Adess\EventManager\Installer.
+register_activation_hook(
+    __FILE__,   // __FILE__ : le chemin vers le fichier principal (adess-resa.php)
+    [\Adess\EventManager\Installer::class, 'activate']
+);
+register_deactivation_hook(
+    __FILE__,
+    [\Adess\EventManager\Installer::class, 'deactivate']
+);
+
+// Chargement des classes communes
+require_once __DIR__ . '/src/Plugin.php'; // contient la méthode run() qui démarre le plugin
+require_once __DIR__ . '/src/Installer.php'; // contient les méthodes activate() et deactivate()
+
+
+// Chargement des classes de modèles
+require_once __DIR__ . '/src/Models/Organizer.php';
+require_once __DIR__ . '/src/Models/Event.php';
+require_once __DIR__ . '/src/Models/Subsidy.php';
+require_once __DIR__ . '/src/Models/Reservation.php';
+
+// Chargement des classes de gestionnaires de données
+//Ces fichiers utilisent PDO pour lire/écrire dans les tables personnalisées.
+// Cela correspond au "M" du MVC (Modèle-Vue-Contrôleur).
+
+require_once __DIR__ . '/src/Repositories/OrganizerRepository.php';
+require_once __DIR__ . '/src/Repositories/EventRepository.php';
+require_once __DIR__ . '/src/Repositories/SubsidyRepository.php';
+require_once __DIR__ . '/src/Repositories/ReservationRepository.php';
+
+
+// Chargement des classes de gestionnaires de formulaires
+// permettent aux utilisateurs de créer des profils, proposer des événements, ou réserver.
+require_once __DIR__ . '/src/Front/Shortcodes/ProfileForm.php';
+require_once __DIR__ . '/src/Front/Shortcodes/EventForm.php';
+require_once __DIR__ . '/src/Front/Shortcodes/BookingForm.php';
+require_once __DIR__ . '/src/Front/Shortcodes/MainMenu.php';
+
+
+if (is_admin()) {
+    // Ces fichiers sont uniquement chargés si on est dans l’admin WordPress
+    // Les fichiers ici gèrent les tableaux dans le back-office (WP_List_Table), ainsi que les menus d’administration.
+    require_once __DIR__ . '/src/Admin/Menu.php';
+    require_once __DIR__ . '/src/Admin/ListTable/OrganizerTable.php';
+    require_once __DIR__ . '/src/Admin/ListTable/EventTable.php';
+    require_once __DIR__ . '/src/Admin/ListTable/SubsidyTable.php';
+    require_once __DIR__ . '/src/Admin/ListTable/ReservationTable.php';
+}
+
+// Initialisation du plugin (menu & shortcodes)
+//Demande WordPress d’exécuter la fonction anonyme après avoir chargé tous les plugins. C’est le même point d’accroche qu’avant.
+add_action('plugins_loaded', function () {
+    (new \Adess\EventManager\Plugin())->run();
+    // shortcodes front
+    (new \Adess\EventManager\Front\Shortcodes\ProfileForm())->register();
+    (new \Adess\EventManager\Front\Shortcodes\EventForm())->register();
+    (new \Adess\EventManager\Front\Shortcodes\BookingForm())->register();
+});
+use Adess\EventManager\Front\Shortcodes\MainMenu;
+
+add_action('init', function() {
+    // Enregistrement du menu principal
+    (new MainMenu())->register();
+});
