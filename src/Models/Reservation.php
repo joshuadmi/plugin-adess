@@ -14,6 +14,11 @@ class Reservation
     // Identifiant de l'utilisateur WordPress (null si invité)
     private $user_id;
 
+    private $guest_name;
+    private $guest_firstname;
+    private $guest_postcode;
+
+
     // Email de l'invité si pas d'utilisateur connecté
     private $guest_email;
 
@@ -41,6 +46,11 @@ class Reservation
         // user_id peut être null ou un int
         $this->user_id = isset($data['user_id']) ? (int) $data['user_id'] : null;
 
+        $this->guest_name      = $data['guest_name']      ?? null;
+        $this->guest_firstname = $data['guest_firstname'] ?? null;
+        $this->guest_postcode  = $data['guest_postcode']  ?? null;
+
+
         // guest_email peut être null ou une chaîne
         $this->guest_email = $data['guest_email'] ?? null;
 
@@ -60,6 +70,10 @@ class Reservation
             $this->created_at = new \DateTime();
         }
     }
+
+
+
+    // Getters et Setters:
 
     // Retourne l'ID (null si pas encore en base)
     public function getId(): ?int
@@ -92,6 +106,38 @@ class Reservation
         $this->user_id = $userId;
         return $this;
     }
+
+
+    public function getGuestName(): ?string
+    {
+        return $this->guest_name;
+    }
+    public function setGuestName(?string $n): self
+    {
+        $this->guest_name = $n;
+        return $this;
+    }
+
+    public function getGuestFirstname(): ?string
+    {
+        return $this->guest_firstname;
+    }
+    public function setGuestFirstname(?string $f): self
+    {
+        $this->guest_firstname = $f;
+        return $this;
+    }
+
+    public function getGuestPostcode(): ?string
+    {
+        return $this->guest_postcode;
+    }
+    public function setGuestPostcode(?string $p): self
+    {
+        $this->guest_postcode = $p;
+        return $this;
+    }
+
 
     // Retourne l'email de l'invité
     public function getGuestEmail(): ?string

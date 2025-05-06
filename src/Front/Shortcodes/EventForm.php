@@ -111,7 +111,7 @@ class EventForm
         // Autres champs
         $output .= field('Lieu de la prestation', 'location', $data['location'] ?? '');
         $output .= field('Date de début',         'start_date', $data['start_date'] ?? '', 'date');
-        $output .= field('Nombre de participants', 'participant_count', $data['participant_count'] ?? 1, 'number');
+        $output .= field('Nombre de participants', 'participant_count', $data['participant_count'] ?? 10, 'number');
         $output .= field('Coût estimé',           'estimated_cost', $data['estimated_cost'] ?? '', 'number', 'step="0.01" readonly');
 
         // Select Statut uniquement admin
@@ -131,6 +131,7 @@ class EventForm
         $json = wp_json_encode($options);
         $output .= "<script>
             (function(){
+                
                 const prices = $json;
                 const form = document.getElementById('adess-event-form');
                 if (!form) return;

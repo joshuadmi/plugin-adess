@@ -2,37 +2,27 @@
 
 namespace Adess\EventManager;
 
-// Classe Installer : crée les tables nécessaires à l'activation du plugin
 class Installer
 {
     // Méthode exécutée à l'activation du plugin
-    //Elle crée les quatre tables nécessaires (organizers, events, subsidies, reservations) en ouvrant d'abord une connexion PDO décorrélée de l'API $wpdb de WordPress.
-
-
     public static function activate()
     {
         // Connexion PDO manuelle pour s'affranchir du couplage avec WordPress
-         // Récupération des constantes de configuration WordPress pour la base de données
-        // DB_HOST, DB_NAME, DB_USER, DB_PASSWORD sont définies dans wp-config.php
-        $host = DB_HOST;
-        $db   = DB_NAME;
-        $user = DB_USER;
-        $pass = DB_PASSWORD;
+        $host    = DB_HOST;
+        $db      = DB_NAME;
+        $user    = DB_USER;
+        $pass    = DB_PASSWORD;
         $charset = 'utf8mb4';
 
-        // Construction du DSN (Data Source Name) pour PDO
-    
         $dsn = "mysql:host={$host};dbname={$db};charset={$charset}";
-        // boîte de réglages » que l’on passe à PDO pour lui dire comment réagir en cas d’erreur 
-
         $options = [
             \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
             \PDO::ATTR_EMULATE_PREPARES   => false,
         ];
-        // Création de l'objet PDO pour la connexion à la base de données
+
         $pdo = new \PDO($dsn, $user, $pass, $options);
-        $prefix = 'wp_adess_';
+        $prefix = $GLOBALS['wpdb']->prefix . 'adess_';
 
         // 1. Table des organisateurs
         $pdo->exec("CREATE TABLE IF NOT EXISTS {$prefix}organizers (
@@ -80,6 +70,9 @@ class Installer
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             event_id BIGINT UNSIGNED NOT NULL,
             user_id BIGINT UNSIGNED DEFAULT NULL,
+            guest_name VARCHAR(191) DEFAULT NULL,
+            guest_firstname VARCHAR(191) DEFAULT NULL,
+            guest_postcode VARCHAR(10) DEFAULT NULL,
             guest_email VARCHAR(191) DEFAULT NULL,
             places INT UNSIGNED NOT NULL,
             amount_paid DECIMAL(10,2) DEFAULT 0,
@@ -87,6 +80,15 @@ class Installer
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+        try {
+            $pdo->exec("ALTER TABLE {$prefix}reservations
+        ADD COLUMN IF NOT EXISTS guest_name VARCHAR(191) DEFAULT NULL,
+        ADD COLUMN IF NOT EXISTS guest_firstname VARCHAR(191) DEFAULT NULL,
+        ADD COLUMN IF NOT EXISTS guest_postcode VARCHAR(10) DEFAULT NULL");
+        } catch (\PDOException $e) {
+            // Ignore erreur si colonnes existent déjà ou si la syntaxe IF NOT EXISTS n'est pas supportée
+        }
     }
 
     // Méthode exécutée à la désactivation du plugin

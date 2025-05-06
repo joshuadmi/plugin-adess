@@ -38,16 +38,22 @@ class BookingForm
             && wp_verify_nonce($_POST['adess_booking_nonce'], 'adess_booking')
         ) {
             // Récupère et sécurise les données postées
-            $guestEmail = sanitize_email($_POST['guest_email'] ?? '');
-            $places     = max(1, intval($_POST['places'] ?? 1));
+            $guestName      = sanitize_text_field($_POST['guest_name'] ?? '');
+            $guestFirstname = sanitize_text_field($_POST['guest_firstname'] ?? '');
+            $guestPostcode  = sanitize_text_field($_POST['guest_postcode'] ?? '');
+            $guestEmail     = sanitize_email($_POST['guest_email'] ?? '');
+            $places         = max(1, intval($_POST['places'] ?? 1));
 
             // Crée et enregistre la réservation
             $reservationRepo = new ReservationRepository();
             $reservation     = new Reservation([
-                'event_id'    => $eventId,
-                'guest_email' => $guestEmail,
-                'places'      => $places,
-                'status'      => 'pending', // statut initial
+                'event_id'       => $eventId,
+                'guest_name'     => $guestName,
+                'guest_firstname'=> $guestFirstname,
+                'guest_postcode' => $guestPostcode,
+                'guest_email'    => $guestEmail,
+                'places'         => $places,
+                'status'         => 'pending', // statut initial
             ]);
             $reservationRepo->save($reservation);
 
@@ -56,9 +62,7 @@ class BookingForm
         }
 
         // Inclusion du template de vue si disponible
-        $viewFile = defined('ADESS_RESA_DIR')
-            ? ADESS_RESA_DIR . 'src/Front/Views/booking-form.php'
-            : plugin_dir_path(__DIR__ . '/../../') . 'src/Front/Views/booking-form.php';
+        $viewFile = __DIR__ . '/../Views/booking-form.php';
 
         if (file_exists($viewFile)) {
             ob_start();
@@ -67,6 +71,7 @@ class BookingForm
             $output .= ob_get_clean();
         } else {
             // Si le fichier de vue est manquant, affiche un fallback
+            error_log('BookingForm: template introuvable à ' . $viewFile);
             $output .= '<p>Le formulaire de réservation n\'est pas disponible pour le moment.</p>';
         }
 

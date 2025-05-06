@@ -23,8 +23,8 @@ class EventForm
         }
 
         // 2) On récupère l’ID de l’événement (0 = création)
-        $atts    = shortcode_atts(['event_id' => 0], $atts, 'adess_event_form');
-        $eventId = (int) $atts['event_id'];
+        $atts    = shortcode_atts(['event_id' => 0], $atts, 'adess_event_form'); 
+        $eventId = (int) $atts['event_id']; // ID de l’événement à éditer
 
         // 3) On s’assure que l’utilisateur a un profil organisateur validé
         $orgRepo   = new OrganizerRepository();
@@ -85,7 +85,7 @@ class EventForm
         }
 
         // 6) Génération du formulaire HTML
-        $output .= '<form method="post">';
+        $output .= '<form method="post" id="adess-event-form">';
         $output .= wp_nonce_field('adess_event', 'adess_event_nonce', true, false);
 
         // Champs de base : type, titre, lieu

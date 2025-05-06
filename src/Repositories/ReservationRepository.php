@@ -8,39 +8,35 @@ use Adess\EventManager\Models\Reservation;
 // Le CRUD (Create, Read, Update, Delete) est géré par cette classe
 class ReservationRepository
 {
-    // PDO instance used to interact with the database
+    // PDo qui permet d'interagir avec la base de données
     private $pdo;
-    // Name of the reservations table (with WP prefix)
+    // Nom de la table de réservation
     private $table;
 
-    // Constructor: establish the PDO connection and set the table name
+    // Ce constructeur initialise la connexion à la base de données
     public function __construct()
     {
-        // Grab DB connection settings from wp-config.php constants
+        // Recuperation des constantes de configuration WordPress pour la base de données
         $host    = DB_HOST;
         $db      = DB_NAME;
         $user    = DB_USER;
         $pass    = DB_PASSWORD;
         $charset = 'utf8mb4';
 
-        // Build the DSN string: specifies host, database, and charset
+        // Le dsn (Data Source Name) est une chaîne de connexion pour PDO
         $dsn = "mysql:host={$host};dbname={$db};charset={$charset}";
 
-        // PDO options:
-        //  - ERRMODE_EXCEPTION to throw exceptions on error
-        //  - DEFAULT_FETCH_MODE_ASSOC to return results as associative arrays
-        //  - EMULATE_PREPARES false to use real prepared statements
+        // Ici on configure PDO pour gérer les erreurs, le mode de récupération par défaut et la simulation des requêtes préparées
         $options = [
             \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
             \PDO::ATTR_EMULATE_PREPARES   => false,
         ];
 
-        // Create the PDO object (connect to the database)
         // cration de l'objet PDO
-        
+
         $this->pdo   = new \PDO($dsn, $user, $pass, $options);
-        // Set the table name, including WP prefix
+        // configuration de la table
         $this->table = $GLOBALS['wpdb']->prefix . 'adess_reservations';
     }
 
@@ -51,7 +47,7 @@ class ReservationRepository
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':id' => $id]);
         $row  = $stmt->fetch();
-        // If found, return a Reservation model, otherwise null
+        // Si trouvé, on crée un objet Reservation
         return $row ? new Reservation($row) : null;
     }
 
@@ -61,24 +57,24 @@ class ReservationRepository
         $sql  = "SELECT * FROM `{$this->table}`";
         $stmt = $this->pdo->query($sql);
         $rows = $stmt->fetchAll();
-        // Map each row to a Reservation object
+        // cherches toutes les réservations et les transforme en objets Reservation
         return array_map(fn($row) => new Reservation($row), $rows);
     }
 
-    // Count total number of reservations
+    // Total des réservations
     public function countAll(): int
     {
         $sql = "SELECT COUNT(*) FROM `{$this->table}`";
-        // fetchColumn returns the first column of the first row
+        // rretourne le nombre total de réservations
         return (int) $this->pdo->query($sql)->fetchColumn();
     }
 
-    // Retrieve a subset of reservations for pagination
+    // Cette méthode récupère les réservations par page
     public function findByPage(int $perPage, int $offset): array
     {
         $sql  = "SELECT * FROM `{$this->table}` ORDER BY created_at DESC LIMIT :offset, :perPage";
         $stmt = $this->pdo->prepare($sql);
-        // Bind offset and limit as integers
+        // protection contre les injections SQL
         $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
         $stmt->bindValue(':perPage', $perPage, \PDO::PARAM_INT);
         $stmt->execute();
@@ -86,19 +82,22 @@ class ReservationRepository
         return array_map(fn($row) => new Reservation($row), $rows);
     }
 
-    // Insert a new reservation or update an existing one
+    // Insèret ou met à jour une réservation
     public function save(Reservation $reservation): int
     {
         if ($reservation->getId() === null) {
-            // No ID => insert new record
+            // No ID => insère une nouvelle réservation
             $sql = "INSERT INTO `{$this->table}`
-                (event_id, user_id, guest_email, places, amount_paid, status)
+                (event_id, user_id, guest_name, guest_firstname, guest_postcode,guest_email, places, amount_paid, status)
                 VALUES
-                (:event_id, :user_id, :guest_email, :places, :amount_paid, :status)";
+                (:event_id, :user_id,  :guest_name, :guest_firstname, :guest_postcode,:guest_email, :places, :amount_paid, :status)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 ':event_id'    => $reservation->getEventId(),
                 ':user_id'     => $reservation->getUserId(),
+                ':guest_name'      => $reservation->getGuestName(),
+                ':guest_firstname' => $reservation->getGuestFirstname(),
+                ':guest_postcode'  => $reservation->getGuestPostcode(),
                 ':guest_email' => $reservation->getGuestEmail(),
                 ':places'      => $reservation->getPlaces(),
                 ':amount_paid' => $reservation->getAmountPaid(),
@@ -112,6 +111,9 @@ class ReservationRepository
         $sql = "UPDATE `{$this->table}` SET
             event_id    = :event_id,
             user_id     = :user_id,
+            guest_name  = :guest_name,
+            guest_firstname = :guest_firstname,
+            guest_postcode = :guest_postcode,
             guest_email = :guest_email,
             places      = :places,
             amount_paid = :amount_paid,
@@ -121,6 +123,9 @@ class ReservationRepository
         $stmt->execute([
             ':event_id'    => $reservation->getEventId(),
             ':user_id'     => $reservation->getUserId(),
+            ':guest_name'      => $reservation->getGuestName(),
+            ':guest_firstname' => $reservation->getGuestFirstname(),
+            ':guest_postcode'  => $reservation->getGuestPostcode(),
             ':guest_email' => $reservation->getGuestEmail(),
             ':places'      => $reservation->getPlaces(),
             ':amount_paid' => $reservation->getAmountPaid(),

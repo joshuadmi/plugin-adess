@@ -1,7 +1,9 @@
 <?php
+
 namespace Adess\EventManager; // pour éviter les conflits de noms
 
 use Adess\EventManager\Admin\Menu;
+use Adess\EventManager\Front\Shortcodes\BookingForm;
 
 // Classe principale du plugin
 // Elle initialise le plugin et enregistre les hooks WordPress
@@ -19,6 +21,9 @@ class Plugin
             $menu->register();
         }
 
-
+        add_action('init', function () {
+            $booking = new BookingForm();
+            $booking->register();
+        });
     }
 }

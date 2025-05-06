@@ -34,7 +34,7 @@ class MainMenu
             }
             $index++;
 
-                // Alternance de classes CSS pour différencier pairs/impairs
+            // Alternance de classes CSS pour différencier pairs/impairs pour pouvoir placer une image de fond
 
             $oddEven = ($index % 2 === 0) ? 'adess-event--even' : 'adess-event--odd';
             $date    = $event->getStartDate()->format('Y-m-d');
@@ -50,21 +50,19 @@ class MainMenu
                 . '<p class="adess-event__meta"><strong>Lieu :</strong> ' . $place . '</p>'
                 . '<p class="adess-event__meta"><strong>Places disponibles :</strong> ' . $remaining . '</p>'
                 . '<div class="adess-event__actions">'
-                . '<a href="' . site_url('/?shortcode=adess_event_detail&event_id=' . $event->getId()) . '">Détails</a>'
-                . '<a href="' . site_url('/?shortcode=adess_booking_form&event_id=' . $event->getId()) . '">S\'inscrire</a>'
+                . '<a href="' . site_url(' /?shortcode=adess_event_detail&event_id=' . $event->getId()) . '">Détails </a>'
+                . '<a href="' . site_url(' /reserver?event_id=' . $event->getId()) . '"> S\'inscrire</a>'
                 . '</div>'
                 . '</div>';
             $articles .= '</article>';
         }
 
         // Encapsule le tout dans une section
-        $html  = '<nav class="adess-menu">'
-            . '<p>' . $loginLink . '</p>'
-            . $profileLink
-            . $eventFormLink
-            . '</nav>';
-
-        $html .= '<section class="adess-events-list">' . $articles . '</section>';
-        return $html;
+        $html  = '<section class="adess-events-list">' 
+        . $articles 
+        . '</section>';
+ 
+ return $html;
+ 
     }
 }
