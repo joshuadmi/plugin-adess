@@ -25,5 +25,16 @@ class Plugin
             $booking = new BookingForm();
             $booking->register();
         });
+        add_action('wp_enqueue_scripts', [$this, 'enqueueStyles']);
+    }
+
+    public function enqueueStyles(): void
+    {
+        wp_enqueue_style(
+            'adess-resa-style',                                   // handle
+            plugin_dir_url(__FILE__) . '../assets/css/style.css',    // URL du fichier
+            [],                                                   // dépendances
+            '0.1.0'                                               // version
+        );
     }
 }

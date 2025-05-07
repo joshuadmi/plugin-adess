@@ -15,9 +15,6 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-error_log('LOADED adess-resa.php – is_admin=' . (is_admin() ? 'yes' : 'no'));
-
-
 // Activation / désactivation
 
 // permet à WordPress d’​exécuter automatiquement des méthodes de la classe Installer quand le plugin est activé.
@@ -78,6 +75,7 @@ add_action('plugins_loaded', function () {
     // shortcodes front
     (new \Adess\EventManager\Front\Shortcodes\ProfileForm())->register();
     (new \Adess\EventManager\Front\Shortcodes\EventForm())->register();
+    (new \Adess\EventManager\Front\Shortcodes\BookingForm())->register();
 });
 
 use Adess\EventManager\Front\Shortcodes\MainMenu;
@@ -102,6 +100,19 @@ add_filter('query_vars', function ($vars) {
 add_filter('the_content', function ($content) {
     if (is_page('reserver') && ($id = get_query_var('event_id'))) {
         return do_shortcode(sprintf('[adess_booking_form event_id="%d"]', (int)$id));
+    }
+    return $content;
+});
+
+// La même logique pour la page Détails
+add_filter('the_content', function ($content) {
+    if (is_page('details') && $id = get_query_var('event_id')) {
+        // on injecte l’ID puis on passe UNE SEULE chaîne à do_shortcode()
+        $shortcode = sprintf(
+            '[adess_event_detail event_id="%d"]',
+            intval($id)
+        );
+        return do_shortcode($shortcode);
     }
     return $content;
 });

@@ -1,0 +1,56 @@
+/* assets/css/style.css */
+
+/* Alignement global des formulaires */
+.adess-event-form,
+.adess-booking-form,
+.adess-profile-form {
+  max-width: 600px;
+  margin: 0 auto 2em;    /* centré + marge basse */
+  padding: 1em;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+/* Styles unifiés pour tous les boutons du plugin */
+.adess-event-form input[type="submit"],
+.adess-booking-form input[type="submit"],
+.adess-profile-form input[type="submit"],
+.adess-event-form .button,
+.adess-booking-form .button,
+.adess-profile-form .button {
+  display: inline-block;
+  padding: 0.5em 1.2em;
+  margin-top: 1em;
+  background-color: #0073aa;
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.adess-event-form input[type="submit"]:hover,
+.adess-booking-form input[type="submit"]:hover,
+.adess-profile-form input[type="submit"]:hover {
+  background-color: #005177;
+}
+
+/* Uniformisation des champs texte et select */
+.adess-event-form input[type="text"],
+.adess-event-form input[type="date"],
+.adess-event-form input[type="number"],
+.adess-booking-form input[type="email"],
+.adess-booking-form input[type="number"],
+.adess-profile-form input[type="text"],
+.adess-profile-form input[type="email"],
+.adess-profile-form input[type="password"],
+.adess-profile-form select,
+.adess-booking-form select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.4em;
+  margin-top: 0.2em;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+}
