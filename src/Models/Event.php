@@ -30,6 +30,8 @@ class Event
     // Coût estimé (peut être NULL avant calcul)
     private $estimated_cost;
 
+    private float $subsidyAmount; // Montant de la subvention
+
     // Notes ou description complémentaire
     private $notes;
 
@@ -53,6 +55,9 @@ class Event
             : new \DateTime();
         $this->participant_count = $data['participant_count'] ?? 0;
         $this->estimated_cost    = $data['estimated_cost'] ?? null;
+        $this->subsidyAmount = isset($data['subsidy_amount'])
+            ? (float) $data['subsidy_amount']
+            : 0.0;
         $this->notes             = $data['notes'] ?? null;
         $this->status            = $data['status'] ?? 'pending';
         $this->created_at        = isset($data['created_at'])
@@ -156,6 +161,18 @@ class Event
     public function setEstimatedCost(?float $cost): self
     {
         $this->estimated_cost = $cost;
+        return $this;
+    }
+
+    // Récupérer le montant de la subvention
+    public function getSubsidyAmount(): ?float
+    {
+        return $this->subsidyAmount;
+    }
+    // Modifier le montant de la subvention
+    public function setSubsidyAmount(?float $amount): self
+    {
+        $this->subsidyAmount = $amount;
         return $this;
     }
 

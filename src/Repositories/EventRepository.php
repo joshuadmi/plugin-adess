@@ -1,4 +1,5 @@
 <?php
+
 namespace Adess\EventManager\Repositories;
 
 use Adess\EventManager\Models\Event;
@@ -41,6 +42,7 @@ class EventRepository
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch();
+
         return $row ? new Event($row) : null;
     }
 
@@ -78,9 +80,9 @@ class EventRepository
         if ($event->getId() === null) {
             // INSERT
             $sql = "INSERT INTO `{$this->table}`
-                   (organizer_id, type, title, location, start_date,  participant_count, estimated_cost, notes, status)
+                   (organizer_id, type, title, location, start_date,  participant_count, estimated_cost, subsidy_amount, notes, status)
                    VALUES
-                   (:organizer_id, :type, :title, :location, :start_date,  :participant_count, :estimated_cost, :notes, :status)";
+                   (:organizer_id, :type, :title, :location, :start_date,  :participant_count, :estimated_cost, :subsidy_amount, :notes, :status)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 ':organizer_id'      => $event->getOrganizerId(),
@@ -90,6 +92,7 @@ class EventRepository
                 ':start_date'        => $event->getStartDate()->format('Y-m-d H:i:s'),
                 ':participant_count' => $event->getParticipantCount(),
                 ':estimated_cost'    => $event->getEstimatedCost(),
+                ':subsidy_amount'    => $event->getSubsidyAmount(),
                 ':notes'             => $event->getNotes(),
                 ':status'            => $event->getStatus(),
             ]);
@@ -105,6 +108,7 @@ class EventRepository
                    start_date        = :start_date,
                    participant_count = :participant_count,
                    estimated_cost    = :estimated_cost,
+                    subsidy_amount    = :subsidy_amount,
                    notes             = :notes,
                    status            = :status
                  WHERE id = :id";
@@ -117,6 +121,7 @@ class EventRepository
             ':start_date'        => $event->getStartDate()->format('Y-m-d H:i:s'),
             ':participant_count' => $event->getParticipantCount(),
             ':estimated_cost'    => $event->getEstimatedCost(),
+            ':subsidy_amount'    => $event->getSubsidyAmount(),
             ':notes'             => $event->getNotes(),
             ':status'            => $event->getStatus(),
             ':id'                => $event->getId(),

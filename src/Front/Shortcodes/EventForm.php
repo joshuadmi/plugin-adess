@@ -10,11 +10,13 @@ class EventForm
 {
     public function register(): void
     {
-        add_shortcode('adess_event_form', [ $this, 'render' ]);
+        add_shortcode('adess_event_form', [$this, 'render']);
     }
 
     public function render(array $atts): string
     {
+
+
         // 1) Vérif. profil organisateur (sauf admin)
         $organizer = null;
         if (! current_user_can('manage_options')) {
@@ -28,8 +30,16 @@ class EventForm
         }
 
         // 2) Préparation des données pour GET (édition) ou valeurs par défaut
-        $atts    = shortcode_atts(['event_id' => 0], $atts, 'adess_event_form');
+        $atts    = shortcode_atts(
+            [
+                'event_id' => 0,
+                'context' => 'front',
+            ],
+            $atts,
+            'adess_event_form'
+        );
         $eventId = (int) $atts['event_id'];
+        $context = $atts['context'];
         $repo    = new EventRepository();
         $data    = [
             'title'             => '',
@@ -37,13 +47,14 @@ class EventForm
             'start_date'        => '',
             'participant_count' => 1,
             'estimated_cost'    => '',
+            'subsidy_amount'    => '',
             'notes'             => '',
             'status'            => 'pending',
         ];
 
         if ($eventId > 0) {
             $existing = $repo->find($eventId);
-            if ($existing && ( current_user_can('manage_options') || $existing->getOrganizerId() === $organizer->getId() )) {
+            if ($existing && (current_user_can('manage_options') || $existing->getOrganizerId() === $organizer->getId())) {
                 $data = [
                     'id'                => $existing->getId(),
                     'title'             => $existing->getTitle(),
@@ -51,6 +62,7 @@ class EventForm
                     'start_date'        => $existing->getStartDate()->format('Y-m-d'),
                     'participant_count' => $existing->getParticipantCount(),
                     'estimated_cost'    => $existing->getEstimatedCost(),
+                    'subsidy_amount'    => $existing->getSubsidyAmount(),
                     'notes'             => $existing->getNotes(),
                     'status'            => $existing->getStatus(),
                 ];
@@ -70,6 +82,10 @@ class EventForm
             $status = current_user_can('manage_options')
                 ? ($input['status'] ?? 'pending')
                 : 'pending';
+            // si on est en admin, on prend la subvention envoyée
+            if ($context === 'admin') {
+                $data['subsidy_amount'] = floatval($input['subsidy_amount'] ?? 0);
+            }
 
             $event = new Event([
                 'id'                => $data['id'] ?? null,
@@ -79,6 +95,7 @@ class EventForm
                 'start_date'        => $input['start_date'] ?? '',
                 'participant_count' => intval($input['participant_count'] ?? 1),
                 'estimated_cost'    => floatval($input['estimated_cost'] ?? 0),
+                'subsidy_amount'    => floatval($input['subsidy_amount'] ?? 0),
                 'notes'             => $input['notes'] ?? '',
                 'status'            => $status,
             ]);
@@ -90,6 +107,9 @@ class EventForm
                     '</p>';
                 $data['id']     = $savedId;
                 $data['status'] = $status;
+                $data['subsidy_amount'] = $event->getSubsidyAmount();
+
+                
             } else {
                 $formMessage = '<p class="notice notice-error">' .
                     esc_html__('Erreur lors de l’enregistrement, réessayez.', 'adess-resa') .
@@ -98,15 +118,16 @@ class EventForm
         }
 
         // 4) On délègue le rendu au template
-        return $this->renderFormTemplate($formMessage, $data, $eventId);
+        return $this->renderFormTemplate($formMessage, $data, $eventId, $context);
     }
 
-    private function renderFormTemplate(string $formMessage, array $data, int $eventId): string
+    private function renderFormTemplate(string $formMessage, array $data, int $eventId, string $context): string
     {
+
         $viewFile = __DIR__ . '/../Views/event-form.php';
         if (file_exists($viewFile)) {
             ob_start();
-            // variables disponibles : $formMessage, $data, $eventId
+            // variables disponibles : $formMessage, $data, $eventId et $context
             include $viewFile;
             return ob_get_clean();
         }

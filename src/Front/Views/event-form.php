@@ -42,6 +42,19 @@
             value="<?php echo esc_attr($data['estimated_cost']); ?>">
     </p>
 
+    <?php if ($context === 'admin'): ?>
+  <p>
+    <label for="subsidy_amount"><?php esc_html_e('Subvention (€)', 'adess-resa'); ?></label><br>
+    <input
+      type="text"
+      name="subsidy_amount"
+      id="subsidy_amount"
+      value="<?php echo esc_attr($data['subsidy_amount'] ?? ''); ?>"
+    >
+  </p>
+<?php endif; ?>
+
+
     <p>
         <label for="adess_notes"><?php esc_html_e("Notes complémentaires :", 'adess-resa'); ?></label><br>
         <textarea name="notes" id="adess_notes" rows="4"><?php echo esc_textarea($data['notes']); ?></textarea>

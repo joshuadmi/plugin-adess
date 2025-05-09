@@ -37,7 +37,6 @@ require_once __DIR__ . '/src/Installer.php'; // contient les méthodes activate(
 // Chargement des classes de modèles
 require_once __DIR__ . '/src/Models/Organizer.php';
 require_once __DIR__ . '/src/Models/Event.php';
-require_once __DIR__ . '/src/Models/Subsidy.php';
 require_once __DIR__ . '/src/Models/Reservation.php';
 
 // Chargement des classes de gestionnaires de données
@@ -46,7 +45,6 @@ require_once __DIR__ . '/src/Models/Reservation.php';
 
 require_once __DIR__ . '/src/Repositories/OrganizerRepository.php';
 require_once __DIR__ . '/src/Repositories/EventRepository.php';
-require_once __DIR__ . '/src/Repositories/SubsidyRepository.php';
 require_once __DIR__ . '/src/Repositories/ReservationRepository.php';
 
 
@@ -63,7 +61,6 @@ require_once __DIR__ . '/src/Front/Shortcodes/MainMenu.php';
 require_once __DIR__ . '/src/Admin/Menu.php';
 require_once __DIR__ . '/src/Admin/ListTable/OrganizerTable.php';
 require_once __DIR__ . '/src/Admin/ListTable/EventTable.php';
-require_once __DIR__ . '/src/Admin/ListTable/SubsidyTable.php';
 require_once __DIR__ . '/src/Admin/ListTable/ReservationTable.php';
 
 
@@ -75,7 +72,7 @@ add_action('plugins_loaded', function () {
     // shortcodes front
     (new \Adess\EventManager\Front\Shortcodes\ProfileForm())->register();
     (new \Adess\EventManager\Front\Shortcodes\EventForm())->register();
-    (new \Adess\EventManager\Front\Shortcodes\BookingForm())->register();
+    
 });
 
 use Adess\EventManager\Front\Shortcodes\MainMenu;

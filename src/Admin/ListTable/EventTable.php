@@ -42,6 +42,8 @@ class EventTable extends WP_List_Table
             'participant_count' => 'Participants',              // Nombre de participants
             'estimated_cost'    => 'Coût estimé',               // Coût calculé
             'status'            => 'Statut',                    // Statut (pending, validated...)
+            'subsidy_amount'        => 'Subvention',
+
             'created_at'        => 'Créé le',                   // Date de création
         ];
     }
@@ -137,6 +139,19 @@ class EventTable extends WP_List_Table
         $order   = ! empty($_REQUEST['order'])   ? sanitize_text_field($_REQUEST['order'])   : 'ASC';
         return [$orderby, $order];
     }
+
+   // Affiche le montant de la subvention
+protected function column_subsidy_amount($item)
+{
+    // $item est une instance de Adess\EventManager\Models\Event
+    $amount = $item->getSubsidyAmount();
+    if ($amount <= 0) {
+        return '—';
+    }
+    // format 2 décimales, virgule caractère français
+    return number_format($amount, 2, ',', ' ') . ' €';
+}
+
 
     // Enveloppe l'affichage dans un <form> pour les bulk actions
     public function display(): void

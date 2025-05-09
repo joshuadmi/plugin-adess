@@ -7,10 +7,7 @@ use Adess\EventManager\Admin\ListTable\EventTable;
 use Adess\EventManager\Admin\ListTable\ReservationTable;
 use Adess\EventManager\Repositories\OrganizerRepository;
 use Adess\EventManager\Models\Organizer;
-use Adess\EventManager\Admin\ListTable\SubsidyTable;
 
-
-error_log('LOADED Admin/Menu.php');
 
 
 // Classe Menu: gère les pages du back-office ADESS Resa
@@ -19,8 +16,9 @@ class Menu
     // Initialise les hooks pour le menu et l'édition des organisateurs
     public function register()
     {
+        //ajoute le menu dans le back-office
         add_action('admin_menu', [$this, 'addAdminPages']);
-        add_action('admin_init', [$this, 'handleOrganizerEdit']);
+        add_action('admin_init', [$this, 'handleOrganizerEdit']); // permet de traiter le formulaire d'édition
     }
 
     // Déclare les pages et sous-pages du menu
@@ -34,10 +32,10 @@ class Menu
             'adess_dashboard',         // Slug
             [$this, 'renderDashboard'], // Callback
             'dashicons-calendar-alt',  // Icône
-            6                          // Position
+            6                          // Position dans le menu
         );
 
-        // Sous-page Organisateurs (liste)
+        // Sous-page Organisateurs (lis)te
         add_submenu_page(
             'adess_dashboard',         // Parent slug
             'Organisateurs',           // Page title
@@ -87,35 +85,15 @@ class Menu
             [$this, 'renderReservations']
         );
 
-        // Sous-page Édition d’une réservation (cachée)
-        add_submenu_page(
-            'adess_dashboard',               // parent slug
-            'Éditer une réservation',        // page title
-            '',                              // menu title (vide pour masquer du menu)
-            'manage_options',                // capability
-            'adess_reservation_edit',        // slug
-            [$this, 'renderReservationEdit'] // callback
-        );
-
-
-        // Sous-page subventions (cachée)
-        add_submenu_page(
-            'adess_dashboard',      // parent slug = ADESS Resa
-            'Subventions',          // Page title
-            'Subventions',          // Menu label
-            'manage_options',       // Capability
-            'adess_subsidy_list',   // Slug
-            [$this, 'renderSubsidies'] // Méthode qui appellera SubsidyTable
-        );
     }
 
     // Gère la soumission du formulaire d'édition d'un organisateur
     public function handleOrganizerEdit()
     {
         if (
-            isset($_POST['adess_organizer_nonce']) &&
-            wp_verify_nonce($_POST['adess_organizer_nonce'], 'adess_organizer_edit') &&
-            current_user_can('manage_options')
+            isset($_POST['adess_organizer_nonce']) && // nonce de sécurité
+            wp_verify_nonce($_POST['adess_organizer_nonce'], 'adess_organizer_edit') && // vérifie le nonce
+            current_user_can('manage_options') // vérifie que l'utilisateur a les droits
         ) {
             $data = array_map('sanitize_text_field', $_POST);
             $repo = new OrganizerRepository();
@@ -147,7 +125,7 @@ class Menu
         echo '</div>';
     }
 
-    // Affiche le formulaire d'édition d'un organisateur
+    // Affiche un formulaire pour éditer un organisateur spécifique. Il récupère l'organisateur en fonction de l'ID passé dans l'URL et affiche les champs avec les valeurs actuelles
     public function renderOrganizerEdit()
     {
         $id = isset($_GET['organizer']) ? intval($_GET['organizer']) : 0;
@@ -192,72 +170,72 @@ class Menu
     }
 
     // Formulaire d'édition d'une réservation
-public function renderReservationEdit()
-{
-    $id   = isset($_GET['reservation']) ? intval($_GET['reservation']) : 0;
-    $repo = new \Adess\EventManager\Repositories\ReservationRepository();
-    $res  = $repo->find($id);
+    public function renderReservationEdit()
+    {
+        $id   = isset($_GET['reservation']) ? intval($_GET['reservation']) : 0;
+        $repo = new \Adess\EventManager\Repositories\ReservationRepository();
+        $res  = $repo->find($id);
 
-    echo '<div class="wrap"><h1>Éditer la réservation</h1>';
+        echo '<div class="wrap"><h1>Éditer la réservation</h1>';
 
-    if (! $res) {
-        echo '<p>Réservation introuvable.</p></div>';
-        return;
+        if (! $res) {
+            echo '<p>Réservation introuvable.</p></div>';
+            return;
+        }
+
+        // Si soumis, on traite la mise à jour
+        if (
+            $_SERVER['REQUEST_METHOD'] === 'POST'
+            && isset($_POST['adess_reservation_nonce'])
+            && wp_verify_nonce($_POST['adess_reservation_nonce'], 'adess_reservation_edit')
+        ) {
+            $data = [
+                'id'          => $res->getId(),
+                'event_id'    => $res->getEventId(),
+                'user_id'     => $res->getUserId(),
+                'guest_email' => sanitize_email($_POST['guest_email'] ?? $res->getGuestEmail()),
+                'places'      => max(1, intval($_POST['places'] ?? $res->getPlaces())),
+                'amount_paid' => floatval($_POST['amount_paid'] ?? $res->getAmountPaid()),
+                'status'      => sanitize_text_field($_POST['status'] ?? $res->getStatus()),
+                'created_at'  => $res->getCreatedAt()->format('Y-m-d H:i:s'),
+            ];
+            $repo->save(new \Adess\EventManager\Models\Reservation($data));
+            echo '<div id="message" class="updated"><p>Réservation mise à jour.</p></div>';
+            // recharger l'objet
+            $res = $repo->find($id);
+        }
+
+        // Affichage du formulaire
+        echo '<form method="post">';
+        wp_nonce_field('adess_reservation_edit', 'adess_reservation_nonce');
+
+        // Exemple de champ : statut
+        echo '<p><label for="adess_status">Statut :</label> ';
+        echo '<select name="status" id="adess_status">';
+        foreach (['pending', 'confirmed', 'cancelled'] as $s) {
+            printf(
+                '<option value="%1$s"%2$s>%1$s</option>',
+                esc_attr($s),
+                selected($res->getStatus(), $s, false)
+            );
+        }
+        echo '</select></p>';
+
+        // Exemple de champ : places
+        echo '<p><label for="adess_places">Places :</label> ';
+        echo '<input type="number" name="places" id="adess_places" min="1" value="' . esc_attr($res->getPlaces()) . '"></p>';
+
+        // Exemple de champ : email invité
+        echo '<p><label for="adess_guest_email">Email invité :</label> ';
+        echo '<input type="email" name="guest_email" id="adess_guest_email" value="' . esc_attr($res->getGuestEmail()) . '"></p>';
+
+        // Exemple de champ : montant payé
+        echo '<p><label for="adess_amount_paid">Montant payé :</label> ';
+        echo '<input type="text" name="amount_paid" id="adess_amount_paid" value="' . esc_attr($res->getAmountPaid()) . '"></p>';
+
+        echo '<p><input type="submit" value="Mettre à jour"></p>';
+        echo '</form></div>';
     }
-
-    // Si soumis, on traite la mise à jour
-    if (
-        $_SERVER['REQUEST_METHOD'] === 'POST'
-        && isset($_POST['adess_reservation_nonce'])
-        && wp_verify_nonce($_POST['adess_reservation_nonce'], 'adess_reservation_edit')
-    ) {
-        $data = [
-            'id'          => $res->getId(),
-            'event_id'    => $res->getEventId(),
-            'user_id'     => $res->getUserId(),
-            'guest_email' => sanitize_email($_POST['guest_email'] ?? $res->getGuestEmail()),
-            'places'      => max(1, intval($_POST['places'] ?? $res->getPlaces())),
-            'amount_paid' => floatval($_POST['amount_paid'] ?? $res->getAmountPaid()),
-            'status'      => sanitize_text_field($_POST['status'] ?? $res->getStatus()),
-            'created_at'  => $res->getCreatedAt()->format('Y-m-d H:i:s'),
-        ];
-        $repo->save(new \Adess\EventManager\Models\Reservation($data));
-        echo '<div id="message" class="updated"><p>Réservation mise à jour.</p></div>';
-        // recharger l'objet
-        $res = $repo->find($id);
-    }
-
-    // Affichage du formulaire
-    echo '<form method="post">';
-    wp_nonce_field('adess_reservation_edit', 'adess_reservation_nonce');
-
-    // Exemple de champ : statut
-    echo '<p><label for="adess_status">Statut :</label> ';
-    echo '<select name="status" id="adess_status">';
-    foreach (['pending','confirmed','cancelled'] as $s) {
-        printf(
-            '<option value="%1$s"%2$s>%1$s</option>',
-            esc_attr($s),
-            selected($res->getStatus(), $s, false)
-        );
-    }
-    echo '</select></p>';
-
-    // Exemple de champ : places
-    echo '<p><label for="adess_places">Places :</label> ';
-    echo '<input type="number" name="places" id="adess_places" min="1" value="' . esc_attr($res->getPlaces()) . '"></p>';
-
-    // Exemple de champ : email invité
-    echo '<p><label for="adess_guest_email">Email invité :</label> ';
-    echo '<input type="email" name="guest_email" id="adess_guest_email" value="' . esc_attr($res->getGuestEmail()) . '"></p>';
-
-    // Exemple de champ : montant payé
-    echo '<p><label for="adess_amount_paid">Montant payé :</label> ';
-    echo '<input type="text" name="amount_paid" id="adess_amount_paid" value="' . esc_attr($res->getAmountPaid()) . '"></p>';
-
-    echo '<p><input type="submit" value="Mettre à jour"></p>';
-    echo '</form></div>';
-}
 
 
     // Affiche le tableau des événements
@@ -277,7 +255,10 @@ public function renderReservationEdit()
         $form = new \Adess\EventManager\Front\Shortcodes\EventForm();
 
         echo '<div class="wrap"><h1>Éditer l’événement</h1>';
-        echo $form->render(['event_id' => $eventId]);
+        echo $form->render([
+            'event_id' => $eventId,
+            'context' => 'admin',
+        ]);
         echo '</div>';
     }
 
@@ -290,15 +271,7 @@ public function renderReservationEdit()
         $table->display();
         echo '</div>';
     }
-    // Affiche le tableau des subventions
-    public function renderSubsidies(): void
-    {
-        $table = new SubsidyTable();
-        $table->prepare_items();
-        echo '<div class="wrap"><h1>Subventions</h1>';
-        $table->display();
-        echo '</div>';
-    }
+
 
 
     // Affiche la page Dashboard (accueil)
