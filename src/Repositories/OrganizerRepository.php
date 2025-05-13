@@ -40,8 +40,8 @@ class OrganizerRepository
         if ($organizer->getId() === null) {
             // INSERT
             $sql = "INSERT INTO `{$this->table}`
-                    (user_id, type, name, address, contact_name, contact_email, phone, default_location, status)
-                     VALUES (:user_id, :type, :name, :address, :contact_name, :contact_email, :phone, :default_location, :status)";
+                    (user_id, type, name, address, contact_name, contact_email, phone, second_street, second_postal_code, second_city, status)
+                     VALUES (:user_id, :type, :name, :address, :contact_name, :contact_email, :phone, :second_street, :second_postal_code, :second_city, :status)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 ':user_id'          => $organizer->getUserId(),
@@ -51,7 +51,9 @@ class OrganizerRepository
                 ':contact_name'     => $organizer->getContactName(),
                 ':contact_email'    => $organizer->getContactEmail(),
                 ':phone'            => $organizer->getPhone(),
-                ':default_location' => $organizer->getDefaultLocation(),
+                ':second_street'    => $organizer->getSecondStreet(),
+                ':second_postal_code' => $organizer->getSecondPostalCode(),
+                ':second_city'      => $organizer->getSecondCity(),
                 ':status'           => $organizer->getStatus(),
             ]);
             // Retourne l'ID inséré
@@ -67,7 +69,9 @@ class OrganizerRepository
                     contact_name     = :contact_name,
                     contact_email    = :contact_email,
                     phone            = :phone,
-                    default_location = :default_location,
+                    second_street    = :second_street,
+                    second_postal_code = :second_postal_code,
+                    second_city      = :second_city,
                     status           = :status
                  WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
@@ -79,7 +83,9 @@ class OrganizerRepository
             ':contact_name'     => $organizer->getContactName(),
             ':contact_email'    => $organizer->getContactEmail(),
             ':phone'            => $organizer->getPhone(),
-            ':default_location' => $organizer->getDefaultLocation(),
+            ':second_street'    => $organizer->getSecondStreet(),
+            ':second_postal_code' => $organizer->getSecondPostalCode(),
+            ':second_city'      => $organizer->getSecondCity(),
             ':status'           => $organizer->getStatus(),
             ':id'               => $organizer->getId(),
         ]);

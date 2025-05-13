@@ -50,11 +50,19 @@ class ProfileForm
                     'user_id'          => $user_id,
                     'type'             => sanitize_text_field($_POST['entity_type']        ?? ''),
                     'name'             => sanitize_text_field($_POST['entity_name']        ?? ''),
-                    'address'          => sanitize_textarea_field($_POST['address']         ?? ''),
+                    // à la place de 'address' => $_POST['address'] inexistant
+                    'address' => sprintf(
+                        '%s %s %s',
+                        sanitize_text_field($_POST['street']      ?? ''),
+                        sanitize_text_field($_POST['postal_code'] ?? ''),
+                        sanitize_text_field($_POST['city']        ?? '')
+                    ),
                     'contact_name'     => sanitize_text_field($_POST['contact_name']      ?? ''),
                     'contact_email'    => sanitize_email($_POST['contact_email']      ?? ''),
                     'phone'            => sanitize_text_field($_POST['phone']             ?? ''),
-                    'default_location' => sanitize_text_field($_POST['default_location']  ?? ''),
+                    'second_street'     => sanitize_text_field($_POST['second_street']     ?? ''),
+                    'second_postal_code' => sanitize_text_field($_POST['second_postal_code'] ?? ''),
+                    'second_city'       => sanitize_text_field($_POST['second_city']       ?? ''),
                     'status'           => 'pending',
                 ];
 

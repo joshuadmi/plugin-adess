@@ -55,15 +55,6 @@ class Installer
             PRIMARY KEY (id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
-        // 3. Table des subventions
-        $pdo->exec("CREATE TABLE IF NOT EXISTS {$prefix}subsidies (
-            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            organizer_id BIGINT UNSIGNED NOT NULL,
-            total_amount DECIMAL(10,2) NOT NULL,
-            remaining_amount DECIMAL(10,2) NOT NULL,
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
         // 4. Table des réservations
         $pdo->exec("CREATE TABLE IF NOT EXISTS {$prefix}reservations (

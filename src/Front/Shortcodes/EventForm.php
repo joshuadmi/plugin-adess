@@ -108,30 +108,35 @@ class EventForm
                 $data['id']     = $savedId;
                 $data['status'] = $status;
                 $data['subsidy_amount'] = $event->getSubsidyAmount();
-
-                
             } else {
                 $formMessage = '<p class="notice notice-error">' .
                     esc_html__('Erreur lors de l’enregistrement, réessayez.', 'adess-resa') .
                     '</p>';
             }
         }
+        $events = $repo->findAll();
 
         // 4) On délègue le rendu au template
-        return $this->renderFormTemplate($formMessage, $data, $eventId, $context);
+        // on vient de récupérer $events = $repo->findAll(); plus haut
+        return $this->renderFormTemplate(
+            $formMessage,
+            $data,
+            $eventId,
+            $context,
+            $events
+        );
     }
 
-    private function renderFormTemplate(string $formMessage, array $data, int $eventId, string $context): string
+    private function renderFormTemplate(string $formMessage, array $data, int $eventId, string $context, array $events): string
     {
 
         $viewFile = __DIR__ . '/../Views/event-form.php';
-        if (file_exists($viewFile)) {
-            ob_start();
-            // variables disponibles : $formMessage, $data, $eventId et $context
-            include $viewFile;
-            return ob_get_clean();
+        if (! file_exists($viewFile)) {
+            return '<p>' . esc_html__('Formulaire indisponible.', 'adess-resa') . '</p>';
         }
-
-        return '<p>' . esc_html__('Formulaire indisponible.', 'adess-resa') . '</p>';
+        ob_start();
+        // variables disponibles : $formMessage, $data, $eventId et $context
+        include $viewFile;
+        return ob_get_clean();
     }
 }

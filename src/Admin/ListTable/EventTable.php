@@ -10,6 +10,8 @@ if (! class_exists('WP_List_Table')) {
 use WP_List_Table;
 use Adess\EventManager\Repositories\EventRepository;
 use Adess\EventManager\Models\Event;
+use Adess\EventManager\Repositories\OrganizerRepository;
+use Adess\EventManager\Models\Organizer;
 
 // Classe pour afficher le tableau des événements en back-office
 class EventTable extends WP_List_Table
@@ -36,6 +38,7 @@ class EventTable extends WP_List_Table
         return [
             'cb'                => '<input type="checkbox" />', // case à cocher pour actions groupées
             'id'                => 'ID',                         // Identifiant de l'événement
+            'organizer'     => 'Organisateur',
             'title'             => 'Événement',                 // Titre
             'location'          => 'Lieu',                      // Lieu
             'start_date'        => 'Date de début',             // Date de début
@@ -113,6 +116,26 @@ class EventTable extends WP_List_Table
         );
     }
 
+    // Colonne organisateur
+    protected function column_organizer($item)
+    {
+        // selon votre modèle Event, remplacez getOrganizerId() 
+        // par le getter qui retourne l’ID de l’organisateur.
+        $orgId = $item->getOrganizerId();
+
+        if (! $orgId) {
+            return '';
+        }
+
+        $repo = new OrganizerRepository();
+        /** @var Organizer|null $org */
+        $org = $repo->find($orgId);
+
+        return $org
+            ? esc_html($org->getName())
+            : '';
+    }
+
     // Colonne titre avec actions (éditer, supprimer)
     protected function column_title($item): string
     {
@@ -140,17 +163,17 @@ class EventTable extends WP_List_Table
         return [$orderby, $order];
     }
 
-   // Affiche le montant de la subvention
-protected function column_subsidy_amount($item)
-{
-    // $item est une instance de Adess\EventManager\Models\Event
-    $amount = $item->getSubsidyAmount();
-    if ($amount <= 0) {
-        return '—';
+    // Affiche le montant de la subvention
+    protected function column_subsidy_amount($item)
+    {
+        // $item est une instance de Adess\EventManager\Models\Event
+        $amount = $item->getSubsidyAmount();
+        if ($amount <= 0) {
+            return '—';
+        }
+        // format 2 décimales, virgule caractère français
+        return number_format($amount, 2, ',', ' ') . ' €';
     }
-    // format 2 décimales, virgule caractère français
-    return number_format($amount, 2, ',', ' ') . ' €';
-}
 
 
     // Enveloppe l'affichage dans un <form> pour les bulk actions

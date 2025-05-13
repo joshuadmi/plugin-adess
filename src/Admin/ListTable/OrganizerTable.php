@@ -41,8 +41,27 @@ class OrganizerTable extends WP_List_Table
             'contact_email' => 'Email contact',
             'status'        => 'Statut',
             'created_at'    => 'Créé le',
+            'lieu_prestation' => 'Lieu de prestation',
+
         ];
     }
+
+    /**
+     * Colonne « Lieu de prestation »
+     */
+    protected function column_lieu_prestation(Organizer $item): string
+    {
+        // Récupère dans l'ordre : n°+voie, CP, ville
+        $street = $item->getSecondStreet();
+        $cp     = $item->getSecondPostalCode();
+        $city   = $item->getSecondCity();
+
+        // Protège contre des valeurs nulles
+        $parts = array_filter([$street, $cp, $city]);
+
+        return esc_html(implode(' ', $parts));
+    }
+
 
     // Colonnes pouvant être triées
     protected function get_sortable_columns(): array

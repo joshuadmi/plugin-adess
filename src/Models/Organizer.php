@@ -30,7 +30,10 @@ class Organizer
     private $phone;
 
     // Lieu de prestation par défaut pour cet organisateur
-    private $defaultLocation;
+
+    private string $secondStreet;
+    private string $secondPostalCode;
+    private string $secondCity;
 
     // Statut de validation : 'pending', 'validated' ou 'rejected'
     private $status;
@@ -49,7 +52,9 @@ class Organizer
         $this->contactName     = $data['contact_name']     ?? null;
         $this->contactEmail    = $data['contact_email']    ?? null;
         $this->phone           = $data['phone']           ?? null;
-        $this->defaultLocation = $data['default_location'] ?? null;
+        $this->secondStreet      = $data['second_street']      ?? '';
+        $this->secondPostalCode  = $data['second_postal_code'] ?? '';
+        $this->secondCity        = $data['second_city']        ?? '';
         $this->status          = $data['status']          ?? 'pending';
 
         if (isset($data['created_at'])) {
@@ -107,11 +112,6 @@ class Organizer
         return $this->phone;
     }
 
-    // Getter pour lieu de prestation par défaut
-    public function getDefaultLocation(): ?string
-    {
-        return $this->defaultLocation;
-    }
 
     // Getter pour statut de validation
     public function getStatus(): string
@@ -123,6 +123,31 @@ class Organizer
     public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
+    }
+
+    public function getSecondStreet(): string
+    {
+        return $this->secondStreet;
+    }
+
+    public function getSecondPostalCode(): string
+    {
+        return $this->secondPostalCode;
+    }
+
+    public function getSecondCity(): string
+    {
+        return $this->secondCity;
+    }
+
+    public function getLieuPrestation(): string
+    {
+        return trim(sprintf(
+            '%s %s %s',
+            $this->secondStreet,
+            $this->secondPostalCode,
+            $this->secondCity
+        ));
     }
 
     // Setters à ajouter si besoin de mettre à jour le modèle (optionnel)

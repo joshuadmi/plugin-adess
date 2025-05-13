@@ -106,7 +106,6 @@ class Menu
                 'contact_name'     => $data['contact_name'],
                 'contact_email'    => $data['contact_email'],
                 'phone'            => $data['phone'],
-                'default_location' => $data['default_location'],
                 'status'           => $data['status'],
             ]);
             $repo->save($organizer);
@@ -157,8 +156,7 @@ class Menu
         echo '<input type="email" name="contact_email" id="organizer_contact_email" value="' . esc_attr($organizer->getContactEmail()) . '"></p>';
         echo '<p><label for="organizer_phone">Téléphone</label><br>';
         echo '<input type="text" name="phone" id="organizer_phone" value="' . esc_attr($organizer->getPhone()) . '"></p>';
-        echo '<p><label for="organizer_default_location">Lieu par défaut</label><br>';
-        echo '<input type="text" name="default_location" id="organizer_default_location" value="' . esc_attr($organizer->getDefaultLocation()) . '"></p>';
+    
         echo '<p><label for="organizer_status">Statut</label><br>';
         echo '<select name="status" id="organizer_status">';
         echo '<option value="pending" ' . selected('pending', $organizer->getStatus(), false) . '>En attente</option>';

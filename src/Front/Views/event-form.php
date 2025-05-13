@@ -14,9 +14,17 @@
 
     <p>
         <label for="adess_title"><?php esc_html_e("Titre de l'événement :", 'adess-resa'); ?></label><br>
-        <input type="text" name="title" id="adess_title"
-            value="<?php echo esc_attr($data['title']); ?>" required>
+        <select name="title" id="adess_title" required>
+            <option value=""><?php esc_html_e('— Sélectionnez un événement —', 'adess-resa'); ?></option>
+            <?php foreach ($events as $evt): ?>
+                <option value="<?php echo esc_attr($evt->getTitle()); ?>"
+                    <?php selected($data['title'] ?? '', $evt->getTitle()); ?>>
+                    <?php echo esc_html($evt->getTitle()); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
     </p>
+
 
     <p>
         <label for="adess_location"><?php esc_html_e("Lieu :", 'adess-resa'); ?></label><br>
@@ -43,16 +51,15 @@
     </p>
 
     <?php if ($context === 'admin'): ?>
-  <p>
-    <label for="subsidy_amount"><?php esc_html_e('Subvention (€)', 'adess-resa'); ?></label><br>
-    <input
-      type="text"
-      name="subsidy_amount"
-      id="subsidy_amount"
-      value="<?php echo esc_attr($data['subsidy_amount'] ?? ''); ?>"
-    >
-  </p>
-<?php endif; ?>
+        <p>
+            <label for="subsidy_amount"><?php esc_html_e('Subvention (€)', 'adess-resa'); ?></label><br>
+            <input
+                type="text"
+                name="subsidy_amount"
+                id="subsidy_amount"
+                value="<?php echo esc_attr($data['subsidy_amount'] ?? ''); ?>">
+        </p>
+    <?php endif; ?>
 
 
     <p>
