@@ -84,7 +84,6 @@ class Menu
             'adess_reservation_list',
             [$this, 'renderReservations']
         );
-
     }
 
     // Gère la soumission du formulaire d'édition d'un organisateur
@@ -114,15 +113,41 @@ class Menu
         }
     }
 
-    // Affiche le tableau des organisateurs
+    // Affiche la liste des organisateurs
     public function renderOrganizers()
     {
-        $table = new OrganizerTable();
+        // 1) Suppression
+        if (
+            isset($_GET['action'], $_GET['organizer'])
+            && $_GET['action'] === 'delete'
+            && current_user_can('manage_options')
+        ) {
+            $id   = intval($_GET['organizer']);
+            $repo = new \Adess\EventManager\Repositories\OrganizerRepository();
+            $repo->delete($id);
+            echo '<div class="notice notice-success"><p>'
+                 . sprintf(__('Organisateur #%d supprimé.', 'adess-resa'), $id)
+                 . '</p></div>';
+            // on continue pour réafficher la liste
+        }
+    
+        // 2) Édition
+        if (
+            isset($_GET['action'], $_GET['organizer'])
+            && $_GET['action'] === 'edit'
+            && current_user_can('manage_options')
+        ) {
+            return $this->renderOrganizerEdit(intval($_GET['organizer']));
+        }
+    
+        // 3) Liste
+        $table = new \Adess\EventManager\Admin\ListTable\OrganizerTable();
         $table->prepare_items();
-        echo '<div class="wrap"><h1>Organisateurs</h1>';
+        echo '<div class="wrap"><h1>' . __('Organisateurs','adess-resa') . '</h1>';
         $table->display();
         echo '</div>';
     }
+    
 
     // Affiche un formulaire pour éditer un organisateur spécifique. Il récupère l'organisateur en fonction de l'ID passé dans l'URL et affiche les champs avec les valeurs actuelles
     public function renderOrganizerEdit()
@@ -156,7 +181,7 @@ class Menu
         echo '<input type="email" name="contact_email" id="organizer_contact_email" value="' . esc_attr($organizer->getContactEmail()) . '"></p>';
         echo '<p><label for="organizer_phone">Téléphone</label><br>';
         echo '<input type="text" name="phone" id="organizer_phone" value="' . esc_attr($organizer->getPhone()) . '"></p>';
-    
+
         echo '<p><label for="organizer_status">Statut</label><br>';
         echo '<select name="status" id="organizer_status">';
         echo '<option value="pending" ' . selected('pending', $organizer->getStatus(), false) . '>En attente</option>';
@@ -185,7 +210,7 @@ class Menu
         if (
             $_SERVER['REQUEST_METHOD'] === 'POST'
             && isset($_POST['adess_reservation_nonce'])
-            && wp_verify_nonce($_POST['adess_reservation_nonce'], 'adess_reservation_edit')
+            && wp_verify_nonce($_POST['adess_reservation_nonce'], 'adess_reservation_list')
         ) {
             $data = [
                 'id'          => $res->getId(),
@@ -205,7 +230,7 @@ class Menu
 
         // Affichage du formulaire
         echo '<form method="post">';
-        wp_nonce_field('adess_reservation_edit', 'adess_reservation_nonce');
+        wp_nonce_field('adess_reservation_list', 'adess_reservation_nonce');
 
         // Exemple de champ : statut
         echo '<p><label for="adess_status">Statut :</label> ';
@@ -238,13 +263,39 @@ class Menu
 
     // Affiche le tableau des événements
     public function renderEvents()
-    {
-        $table = new EventTable();
-        $table->prepare_items();
-        echo '<div class="wrap"><h1>Événements</h1>';
-        $table->display();
-        echo '</div>';
+{
+    // 1) Suppression
+    if (
+        isset($_GET['action'], $_GET['event'])
+        && $_GET['action'] === 'delete'
+        && current_user_can('manage_options')
+    ) {
+        $id   = intval($_GET['event']);
+        $repo = new \Adess\EventManager\Repositories\EventRepository();
+        $repo->delete($id);
+        echo '<div class="notice notice-success"><p>'
+             . sprintf(__('Événement #%d supprimé.', 'adess-resa'), $id)
+             . '</p></div>';
+        // on continue pour afficher la liste à jour
     }
+
+    // 2) Édition
+    if (
+        isset($_GET['action'], $_GET['event'])
+        && $_GET['action'] === 'edit'
+        && current_user_can('manage_options')
+    ) {
+        return $this->renderEventEdit(intval($_GET['event']));
+    }
+
+    // 3) Liste
+    $table = new \Adess\EventManager\Admin\ListTable\EventTable();
+    $table->prepare_items();
+    echo '<div class="wrap"><h1>' . __('Événements','adess-resa') . '</h1>';
+    $table->display();
+    echo '</div>';
+}
+
 
     // Affiche le formulaire d'édition d'un événement
     public function renderEventEdit()
@@ -260,15 +311,47 @@ class Menu
         echo '</div>';
     }
 
-    // Affiche le tableau des réservations
+    // Affiche le tableau des réservations et gère l'édition d'une réservation
     public function renderReservations()
     {
+
+        // ---- Suppression ----
+        if (
+            isset($_GET['action'], $_GET['reservation'])
+            && $_GET['action'] === 'delete'
+            && current_user_can('manage_options')
+        ) {
+            $id = intval($_GET['reservation']);
+            // supprime via ton repository
+            $repo = new \Adess\EventManager\Repositories\ReservationRepository();
+            $repo->delete($id);
+
+            // message de succès
+            echo '<div class="notice notice-success">
+            <p>Réservation #' . esc_html($id) . ' supprimée.</p>
+          </div>';
+            // on ne fait pas return, on continue pour réafficher la liste
+        }
+
+
+        // 1) Si on demande l'édition d'une réservation
+        if (
+            isset($_GET['action'], $_GET['reservation'])
+            && $_GET['action'] === 'edit'
+            && current_user_can('manage_options')
+        ) {
+            $reservation_id = intval($_GET['reservation']);
+            return $this->renderReservationEdit($reservation_id);
+        }
+
+        // 2) Sinon, on reste sur la liste
         $table = new ReservationTable();
         $table->prepare_items();
         echo '<div class="wrap"><h1>Réservations</h1>';
         $table->display();
         echo '</div>';
     }
+
 
 
 

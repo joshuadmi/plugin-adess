@@ -45,6 +45,8 @@ class ProfileForm
                 wp_set_current_user($user_id);
                 wp_set_auth_cookie($user_id);
 
+
+
                 // 2) Préparation des données du profil organisateur
                 $data = [
                     'user_id'          => $user_id,
@@ -60,9 +62,20 @@ class ProfileForm
                     'contact_name'     => sanitize_text_field($_POST['contact_name']      ?? ''),
                     'contact_email'    => sanitize_email($_POST['contact_email']      ?? ''),
                     'phone'            => sanitize_text_field($_POST['phone']             ?? ''),
-                    'second_street'     => sanitize_text_field($_POST['second_street']     ?? ''),
-                    'second_postal_code' => sanitize_text_field($_POST['second_postal_code'] ?? ''),
-                    'second_city'       => sanitize_text_field($_POST['second_city']       ?? ''),
+                    'use_same_address' => isset($_POST['same_address']) && '1' === $_POST['same_address'],
+
+                    // Choix de l’adresse de la salle
+                    'second_street'     => (isset($_POST['same_address']) && '1' === $_POST['same_address'])
+                        ? sanitize_text_field($_POST['street']      ?? '')
+                        : sanitize_text_field($_POST['second_street']     ?? ''),
+
+                    'second_postal_code' => (isset($_POST['same_address']) && '1' === $_POST['same_address'])
+                        ? sanitize_text_field($_POST['postal_code'] ?? '')
+                        : sanitize_text_field($_POST['second_postal_code'] ?? ''),
+
+                    'second_city'       => (isset($_POST['same_address']) && '1' === $_POST['same_address'])
+                        ? sanitize_text_field($_POST['city']        ?? '')
+                        : sanitize_text_field($_POST['second_city']       ?? ''),
                     'status'           => 'pending',
                 ];
 
@@ -84,23 +97,26 @@ class ProfileForm
                 }
             }
         }
-        return $this->renderFormTemplate($isGuest, $formMessage);
+        return $this->renderFormTemplate($isGuest, $formMessage, $currentData ?? []);
     }
 
     // Chargement du template
     //       // On inclut le template de formulaire
 
-    private function renderFormTemplate(bool $isGuest, string $formMessage): string
+    private function renderFormTemplate(bool $isGuest, string $formMessage, array $data): string
     {
         $viewFile = __DIR__ . '/../Views/profile-form.php';
-        if (file_exists($viewFile)) {
-            ob_start();
-            // Variables disponibles dans le template :
-            //   $isGuest, $formMessage
-            include $viewFile;
-            return ob_get_clean();
+        if (! file_exists($viewFile)) {
+            return '<p>' . esc_html__('Formulaire indisponible pour le moment.', 'adess-resa') . '</p>';
         }
 
-        return '<p>' . esc_html__('Formulaire indisponible pour le moment.', 'adess-resa') . '</p>';
+        // Expose les variables dans le scope du template
+        $isGuest     = $isGuest;
+        $formMessage = $formMessage;
+        $data        = $data;
+
+        ob_start();
+        include $viewFile;
+        return ob_get_clean();
     }
 }

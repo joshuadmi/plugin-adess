@@ -27,10 +27,12 @@
 
 
     <p>
-        <label for="adess_location"><?php esc_html_e("Lieu :", 'adess-resa'); ?></label><br>
+        <label for="adess_location"><?php esc_html_e("Lieu de la prestation :", 'adess-resa'); ?></label><br>
         <input type="text" name="location" id="adess_location"
             value="<?php echo esc_attr($data['location']); ?>" required>
     </p>
+
+
 
     <p>
         <label for="adess_start_date"><?php esc_html_e("Date de début :", 'adess-resa'); ?></label><br>
@@ -43,6 +45,7 @@
         <input type="number" name="participant_count" id="adess_participant_count" min="1"
             value="<?php echo esc_attr($data['participant_count']); ?>">
     </p>
+
 
     <p>
         <label for="adess_estimated_cost"><?php esc_html_e("Coût estimé (€) :", 'adess-resa'); ?></label><br>
@@ -61,6 +64,8 @@
         </p>
     <?php endif; ?>
 
+    <label for="event_image">Image de l'événement :</label>
+    <input type="file" name="event_image" id="event_image" accept="image/*">
 
     <p>
         <label for="adess_notes"><?php esc_html_e("Notes complémentaires :", 'adess-resa'); ?></label><br>
@@ -82,6 +87,7 @@
     <?php endif; ?>
 
     <?php if (current_user_can('manage_options')): ?>
+
 
         <p>
             <label for="event_pdf"><?php esc_html_e('Fiche PDF (optionnel) :', 'adess-resa'); ?></label><br>

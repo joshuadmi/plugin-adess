@@ -13,6 +13,7 @@ class EventForm
         add_shortcode('adess_event_form', [$this, 'render']);
     }
 
+    // Rendu du formulaire d'événement, pour la demande de création d'un événement
     public function render(array $atts): string
     {
 
@@ -52,7 +53,7 @@ class EventForm
             'status'            => 'pending',
         ];
 
-        if ($eventId > 0) {
+        if ($eventId > 0) { // si on est en mode édition
             $existing = $repo->find($eventId);
             if ($existing && (current_user_can('manage_options') || $existing->getOrganizerId() === $organizer->getId())) {
                 $data = [
@@ -69,7 +70,18 @@ class EventForm
             }
         }
 
+        // Si pas d'eventId, on remplit le champ 'location' avec l'adresse de l'organisateur
+        if ($eventId === 0) {
+            $data['location'] = trim(
+                $organizer->getSecondStreet()      . ' ' .
+                    $organizer->getSecondPostalCode()  . ' ' .
+                    $organizer->getSecondCity()
+            );
+        }
+
+
         $formMessage = '';
+
 
         // 3) Traitement du POST
         if (
@@ -86,6 +98,29 @@ class EventForm
             if ($context === 'admin') {
                 $data['subsidy_amount'] = floatval($input['subsidy_amount'] ?? 0);
             }
+
+            $image_url = null;
+
+            if (!empty($_FILES['event_image']['name'])) {
+                // Récupère les infos sur l’upload dir WordPress
+                $upload_dir = wp_upload_dir();
+                $target_dir = $upload_dir['basedir'] . '/adess-events/';
+                if (!file_exists($target_dir)) {
+                    mkdir($target_dir, 0755, true);
+                }
+
+                // Sécurise le nom du fichier
+                $filename = uniqid() . '_' . basename($_FILES['event_image']['name']);
+                $target_file = $target_dir . $filename;
+                $file_type = mime_content_type($_FILES['event_image']['tmp_name']);
+                $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (in_array($file_type, $allowed_types)) {
+                    if (move_uploaded_file($_FILES['event_image']['tmp_name'], $target_file)) {
+                        $image_url = $upload_dir['baseurl'] . '/adess-events/' . $filename;
+                    }
+                }
+            }
+
 
             $event = new Event([
                 'id'                => $data['id'] ?? null,

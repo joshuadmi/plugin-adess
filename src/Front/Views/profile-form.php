@@ -74,8 +74,8 @@
     </p>
 
     <label>
-        <input type="checkbox" id="sameAddress" checked>
-        Même adresse que l’adresse principale
+        <input type="checkbox" id="sameAddress" name="same_address" value="1" checked>
+        <?php esc_html_e('Même adresse que l’adresse principale', 'adess-resa'); ?>
     </label>
 
     <div id="second-address-container" style="display: none;">
@@ -87,7 +87,8 @@
                 id="profile_second_street"
                 class="regular-text autocomplete-address"
                 autocomplete="off"
-                placeholder="<?php esc_attr_e('N° et nom de rue', 'adess-resa'); ?>">
+                placeholder="<?php esc_attr_e('N° et nom de rue', 'adess-resa'); ?>"
+                value="<?php echo esc_attr($data['second_street'] ?? ''); ?>">
         <ul id="autocomplete-list-2" class="autocomplete-list"></ul>
         </p>
         <p>
@@ -97,7 +98,8 @@
                 name="second_postal_code"
                 id="profile_second_postal_code"
                 class="regular-text"
-                maxlength="5">
+                maxlength="5"
+                value="<?php echo esc_attr($data['second_postal_code'] ?? ''); ?>">
         </p>
         <p>
             <label for="profile_second_city"><?php esc_html_e('Ville :', 'adess-resa'); ?></label><br>
@@ -105,7 +107,8 @@
                 type="text"
                 name="second_city"
                 id="profile_second_city"
-                class="regular-text">
+                class="regular-text"
+                value="<?php echo esc_attr($data['second_city'] ?? ''); ?>">
         </p>
     </div>
 

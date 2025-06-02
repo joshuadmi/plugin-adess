@@ -119,30 +119,32 @@ class ReservationTable extends WP_List_Table
         }
     }
     // Affiche le contenu de la colonne ID avec des actions
+
     protected function column_id($item): string
     {
+        $id = $item->getId();
 
-        // URL d'édition et de suppression
-        $edit_url = admin_url('admin.php?page=adess_reservation_edit&reservation=' . $item->getId());
-        $delete_url = admin_url('admin.php?page=adess_reservation_list&action=delete&reservation=' . $item->getId());
+        // URL d'édition et de suppression avec action=edit
+        $edit_url = admin_url(
+            'admin.php?page=adess_reservation_list'
+                . '&action=edit'
+                . '&reservation=' . $id
+        );
+        $delete_url = admin_url(
+            'admin.php?page=adess_reservation_list'
+                . '&action=delete'
+                . '&reservation=' . $id
+        );
 
         // Actions à afficher
         $actions = [
-            'edit'   => sprintf(
-                '<a href="?page=adess_reservation_edit&reservation=%d">%s</a>',
-                $item->getId(),
-                __('Éditer', 'adess-resa')
-            ),
-            'delete' => sprintf(
-                '<a href="?page=adess_reservation_list&action=delete&reservation=%d">%s</a>',
-                $item->getId(),
-                __('Supprimer', 'adess-resa')
-            ),
+            'edit'   => '<a href="' . esc_url($edit_url) . '">' . __('Éditer', 'adess-resa') . '</a>',
+            'delete' => '<a href="' . esc_url($delete_url) . '" onclick="return confirm(\'Voulez-vous vraiment supprimer cette réservation ?\')">Supprimer</a>',
         ];
 
         return sprintf(
             '%1$s %2$s',
-            esc_html($item->getId()),
+            esc_html($id),
             $this->row_actions($actions)
         );
     }

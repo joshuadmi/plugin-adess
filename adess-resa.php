@@ -52,8 +52,10 @@ require_once __DIR__ . '/src/Repositories/ReservationRepository.php';
 // permettent aux utilisateurs de créer des profils, proposer des événements, ou réserver.
 require_once __DIR__ . '/src/Front/Shortcodes/ProfileForm.php';
 require_once __DIR__ . '/src/Front/Shortcodes/EventForm.php';
+require_once __DIR__ . '/src/Front/Shortcodes/EditProfileForm.php';
 require_once __DIR__ . '/src/Front/Shortcodes/BookingForm.php';
 require_once __DIR__ . '/src/Front/Shortcodes/MainMenu.php';
+
 
 
 // Ces fichiers sont uniquement chargés si on est dans l’admin WordPress : logique Changé  dans plugins loaded
@@ -72,7 +74,7 @@ add_action('plugins_loaded', function () {
     // shortcodes front
     (new \Adess\EventManager\Front\Shortcodes\ProfileForm())->register();
     (new \Adess\EventManager\Front\Shortcodes\EventForm())->register();
-    
+    (new \Adess\EventManager\Front\Shortcodes\EditProfileForm())->register();
 });
 
 use Adess\EventManager\Front\Shortcodes\MainMenu;

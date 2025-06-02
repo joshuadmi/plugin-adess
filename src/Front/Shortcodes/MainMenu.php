@@ -22,6 +22,11 @@ class MainMenu
         //    (via le repository qui utilise PDO en interne)
         $repo     = new EventRepository(); // instancie le repository
         $all      = $repo->findAll(); // récupère tous les événements
+
+        // Crée une instance du repository de réservations
+        $reservationRepo = new \Adess\EventManager\Repositories\ReservationRepository();
+
+
         $articles = ''; // initialise la variable pour le HTML
         $index    = 0; // initialise l'index pour alterner les classes CSS
 
@@ -40,7 +45,9 @@ class MainMenu
             $date    = $event->getStartDate()->format('Y-m-d');
             $place   = esc_html($event->getLocation());
             $title   = esc_html($event->getTitle());
-            $remaining = max(0, (int) $event->getParticipantCount());
+            $reserved = $reservationRepo->countByEventId($event->getId());
+
+            $remaining = max(0, (int) $event->getParticipantCount() - $reserved);
 
             // Construction du bloc HTML pour l'événement courant: qu'est ce qu'on affiche ?
             $articles .= '<article class="adess-event ' . $oddEven . '">';
@@ -58,11 +65,10 @@ class MainMenu
         }
 
         // Encapsule le tout dans une section
-        $html  = '<section class="adess-events-list">' 
-        . $articles 
-        . '</section>';
- 
- return $html;
- 
+        $html  = '<section class="adess-events-list">'
+            . $articles
+            . '</section>';
+
+        return $html;
     }
 }

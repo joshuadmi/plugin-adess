@@ -107,6 +107,25 @@ class EventTable extends WP_List_Table
         return print_r($item, true);
     }
 
+    protected function column_participant_count($item)
+    {
+        $event_id = $item->getId();
+        $total = $item->getParticipantCount();
+
+        // Crée un objet ReservationRepository
+        $reservationRepo = new \Adess\EventManager\Repositories\ReservationRepository();
+        $reserved = $reservationRepo->countByEventId($event_id);
+
+        $remaining = $total - $reserved;
+
+        error_log('Appel countByEventId pour event_id=' . $event_id);
+        error_log('Réservations trouvées : ' . $reserved);
+
+
+        return esc_html("{$remaining} / {$total}");
+    }
+
+
     // Case à cocher de la première colonne
     protected function column_cb($item): string
     {
@@ -119,8 +138,7 @@ class EventTable extends WP_List_Table
     // Colonne organisateur
     protected function column_organizer($item)
     {
-        // selon votre modèle Event, remplacez getOrganizerId() 
-        // par le getter qui retourne l’ID de l’organisateur.
+
         $orgId = $item->getOrganizerId();
 
         if (! $orgId) {
@@ -139,21 +157,30 @@ class EventTable extends WP_List_Table
     // Colonne titre avec actions (éditer, supprimer)
     protected function column_title($item): string
     {
-        // Liens d'action posés sous le titre
+        $id = $item->getId();
+
+        $url_base = admin_url('admin.php?page=adess_event_list');
+
         $actions = [
             'edit'   => sprintf(
-                '<a href="?page=adess_event_edit&event=%d">Éditer</a>',
-                $item->getId()
+                '<a href="%s&action=edit&event=%d">Éditer</a>',
+                esc_url($url_base),
+                $id
             ),
             'delete' => sprintf(
-                '<a href="?page=adess_event_list&action=delete&event=%d">Supprimer</a>',
-                $item->getId()
+                '<a href="%s&action=delete&event=%d" onclick="return confirm(\'Confirmer la suppression de cet événement ?\')">Supprimer</a>',
+                esc_url($url_base),
+                $id
             ),
         ];
 
-        // Affiche le titre + les actions
-        return sprintf('%1$s %2$s', esc_html($item->getTitle()), $this->row_actions($actions));
+        return sprintf(
+            '%1$s %2$s',
+            esc_html($item->getTitle()),
+            $this->row_actions($actions)
+        );
     }
+
 
     // Lit l'ordre et la direction du tri dans la requête HTTP
     private function get_sortable_column_order(): array

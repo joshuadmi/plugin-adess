@@ -127,16 +127,35 @@ class OrganizerTable extends WP_List_Table
 
     // Personnalisation de la colonne "name" avec actions
     protected function column_name($item): string
-    {
-        // Liens d'édition et de suppression
-        $actions = [
-            'edit'   => sprintf('<a href="?page=adess_organizer_edit&organizer=%d">Éditer</a>', $item->getId()),
-            'delete' => sprintf('<a href="?page=adess_organizer_list&action=delete&organizer=%d">Supprimer</a>', $item->getId()),
-        ];
+{
+    $id = $item->getId();
 
-        // Nom + actions
-        return sprintf('%1$s %2$s', esc_html($item->getName()), $this->row_actions($actions));
-    }
+    // URL de base pour la liste des organisateurs
+    $base = admin_url('admin.php?page=adess_organizer_list');
+
+    $actions = [
+        // Édition (déjà en place)
+        'edit'   => sprintf(
+            '<a href="%s&action=edit&organizer=%d">Éditer</a>',
+            esc_url($base),
+            $id
+        ),
+        // Suppression (ajout de action=delete)
+        'delete' => sprintf(
+            '<a href="%s&action=delete&organizer=%d" onclick="return confirm(\'Confirmer la suppression de cet organisateur ?\')">Supprimer</a>',
+            esc_url($base),
+            $id
+        ),
+    ];
+
+    // Affiche le nom + les liens sous forme d’actions
+    return sprintf(
+        '%1$s %2$s',
+        esc_html($item->getName()),
+        $this->row_actions($actions)
+    );
+}
+
 
     // Récupère l'ordre de tri depuis la requête HTTP
     private function get_sortable_column_order(): array

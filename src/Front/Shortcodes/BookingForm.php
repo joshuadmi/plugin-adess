@@ -56,6 +56,7 @@ class BookingForm
                 'status'         => 'pending', // statut initial
             ]);
             $reservationRepo->save($reservation);
+            
 
             // Message de confirmation
             $output .= '<p>Votre réservation a été enregistrée. Merci !</p>';

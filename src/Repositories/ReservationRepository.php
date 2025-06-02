@@ -69,6 +69,16 @@ class ReservationRepository
         return (int) $this->pdo->query($sql)->fetchColumn();
     }
 
+    // Compte le nombre de réservations pour un événement donné
+    public function countByEventId(int $eventId): int
+    {
+        $sql = "SELECT COUNT(*) FROM `{$this->table}` WHERE event_id = :event_id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':event_id' => $eventId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+
     // Cette méthode récupère les réservations par page
     public function findByPage(int $perPage, int $offset): array
     {
